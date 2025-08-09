@@ -3,11 +3,18 @@ from tkinter import ttk
 import requests
 from io import BytesIO
 from PIL import Image, ImageTk
+import os
+from pathlib import Path
+from dotenv import load_dotenv
 
-API_KEY="b86d8a29741c2971922b020659021fe6"
+env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
+
+
 CITY="Seoul"
+api_key = os.getenv("OPENWEATHER_API_KEY")
 
-url = f"https://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={API_KEY}"
+url = f"https://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={api_key}"
 res = requests.get(url)
 
 data = res.json()
