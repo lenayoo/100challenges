@@ -11,7 +11,7 @@ env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
 
-CITY="Seoul"
+CITY="Tokyo"
 api_key = os.getenv("OPENWEATHER_API_KEY")
 
 url = f"https://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={api_key}"
