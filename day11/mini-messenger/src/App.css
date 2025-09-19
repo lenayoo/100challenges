@@ -52,7 +52,10 @@
 }
 
 .my-message {
+  color: black;
 }
 
 .other-message {
+  color: blue;
+  text-align: left;
 }

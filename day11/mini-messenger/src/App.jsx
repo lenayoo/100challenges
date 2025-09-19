@@ -10,6 +10,7 @@ import {
   query,
   orderBy,
   serverTimestamp,
+  getDocs,
   Timestamp,
 } from 'firebase/firestore';
 
@@ -30,10 +31,15 @@ const db = getFirestore(app);
 export default function App() {
   const [userName, setUserName] = useState('');
   useEffect(() => {
-    const q = query(collection(db, 'messages'), orderBy('timestamp', 'asc'));
     if (!userName) {
       setUserName(prompt('이름을 알려주세요') || null);
     }
+    const q = query(collection(db, 'messages'), orderBy('Timestamp', 'asc'));
+
+    getDocs(q).then((snapshot) => {
+      const oldMessages = snapshot.docs.map((doc) => doc.data());
+      setMessages(oldMessages);
+    });
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const msgs = snapshot.docs.map((doc) => doc.data());
@@ -41,7 +47,7 @@ export default function App() {
     });
 
     return () => unsubscribe(); // 컴포넌트 언마운트 시 구독 해제
-  }, [userName]);
+  }, []);
 
   // 메시지 상태
   const [messages, setMessages] = useState([]);
@@ -72,7 +78,7 @@ export default function App() {
           {messages.map((m, idx) => (
             <p
               key={idx}
-              className={m.user === userName ? 'my-message' : 'other-message'}
+              className={m.user === '은미' ? 'my-message' : 'other-message'}
             >
               <b>{m.user}:</b> {m.text}
             </p>
