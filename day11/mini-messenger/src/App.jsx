@@ -1,22 +1,64 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import bgImg from './assets/bg-yoolee.png';
 import './App.css';
+import { initializeApp } from 'firebase/app';
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  serverTimestamp,
+  Timestamp,
+} from 'firebase/firestore';
+
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
 
 export default function App() {
-  // 처음 접속 시 이름 입력 (임시 로그인 같은 느낌)
-  const [userName] = useState(() => prompt('이름을 입력하세요') || '익명');
+  const [userName, setUserName] = useState('');
+  useEffect(() => {
+    const q = query(collection(db, 'messages'), orderBy('timestamp', 'asc'));
+    if (!userName) {
+      setUserName(prompt('이름을 알려주세요') || null);
+    }
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const msgs = snapshot.docs.map((doc) => doc.data());
+      setMessages(msgs);
+    });
+
+    return () => unsubscribe(); // 컴포넌트 언마운트 시 구독 해제
+  }, [userName]);
 
   // 메시지 상태
-  const [messages, setMessages] = useState([
-    { user: '은미', text: '나 지금 가는 중이야' },
-    { user: '엄마', text: '저녁 뭐 먹을래?' },
-  ]);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
 
   // 메시지 전송 함수
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
     setMessages([...messages, { user: userName, text: input }]);
+
+    await addDoc(collection(db, 'messages'), {
+      user: userName,
+      text: input,
+      Timestamp: serverTimestamp(),
+    });
+    console.log(messages);
+
     setInput('');
   };
 
@@ -30,7 +72,7 @@ export default function App() {
           {messages.map((m, idx) => (
             <p
               key={idx}
-              className={m.user === '은미' ? 'my-message' : 'other-message'}
+              className={m.user === userName ? 'my-message' : 'other-message'}
             >
               <b>{m.user}:</b> {m.text}
             </p>
