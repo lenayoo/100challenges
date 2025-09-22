@@ -53,9 +53,14 @@
 
 .my-message {
   color: black;
+  display: flex;
+  flex-direction: row;
 }
 
 .other-message {
   color: blue;
   text-align: left;
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
 }

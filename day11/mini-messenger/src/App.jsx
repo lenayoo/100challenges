@@ -12,6 +12,8 @@ import {
   serverTimestamp,
   getDocs,
   Timestamp,
+  deleteDoc,
+  doc,
 } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -37,12 +39,15 @@ export default function App() {
     const q = query(collection(db, 'messages'), orderBy('Timestamp', 'asc'));
 
     getDocs(q).then((snapshot) => {
-      const oldMessages = snapshot.docs.map((doc) => doc.data());
+      const oldMessages = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setMessages(oldMessages);
     });
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const msgs = snapshot.docs.map((doc) => doc.data());
+      const msgs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setMessages(msgs);
     });
 
@@ -68,6 +73,10 @@ export default function App() {
     setInput('');
   };
 
+  const deleteMessage = async (id) => {
+    await deleteDoc(doc(db, 'messages', id));
+  };
+
   return (
     <div className='app-container' style={{ backgroundImage: `url(${bgImg})` }}>
       {/* 채팅 박스 */}
@@ -76,12 +85,22 @@ export default function App() {
 
         <div className='messages'>
           {messages.map((m, idx) => (
-            <p
-              key={idx}
+            <div
+              key={m.id}
               className={m.user === '은미' ? 'my-message' : 'other-message'}
             >
-              <b>{m.user}:</b> {m.text}
-            </p>
+              <p key={idx}>
+                <b>{m.user}:</b> {m.text}
+              </p>
+              <button
+                onClick={() => {
+                  console.log(m.id);
+                  deleteMessage(m.id);
+                }}
+              >
+                삭제
+              </button>
+            </div>
           ))}
         </div>
 
